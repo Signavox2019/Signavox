@@ -1,0 +1,235 @@
+/* Layout Component Styles */
+
+/* Layout Component Styles */
+.layout {
+  min-height: 100vh;
+  /* Subtle light at top, quick transition to dark - matching screenshot */
+  background: linear-gradient(180deg, #311188 0%, #311188 15%, #0A081E 35%, #0A081E 100%);
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Fixed Background Watermark element styled from JSX inline bg-image */
+.bg-watermark {
+  position: fixed;
+  top: 50%;
+  right: -2%;
+  width: 88vmin;
+  height: 88vmin;
+  transform: translateY(-50%);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  opacity: 0.08;
+  pointer-events: none;
+  z-index: 0;
+  filter: saturate(120%);
+}
+
+/* Layered overlays to shape light/dark like the reference */
+.layout::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  /* Enhanced radial glow matching screenshot - bright purple from top-right */
+  background:
+    radial-gradient(1800px 1400px at 90% 12%, rgba(49, 17, 136, 0.25) 0%, rgba(49, 17, 136, 0.18) 15%, rgba(49, 17, 136, 0.12) 25%, rgba(49, 17, 136, 0.06) 40%, rgba(49, 17, 136, 0.02) 55%, transparent 75%),
+    radial-gradient(1000px 800px at 15% 20%, rgba(49, 17, 136, 0.12) 0%, rgba(49, 17, 136, 0.06) 25%, rgba(49, 17, 136, 0.02) 45%, transparent 70%),
+    radial-gradient(600px 400px at 70% 80%, rgba(49, 17, 136, 0.08) 0%, rgba(49, 17, 136, 0.03) 40%, transparent 70%),
+    linear-gradient(180deg, rgba(49, 17, 136, 0.12) 0%, rgba(49, 17, 136, 0.06) 15%, rgba(0,0,0,0.15) 35%, rgba(0,0,0,0.3) 65%, rgba(0,0,0,0.4) 100%);
+  pointer-events: none;
+}
+
+/* Remove older decorative layer (not needed now) */
+.layout::after { display: none; }
+
+/* Fixed Header */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: transparent; /* transparent like screenshot */
+  backdrop-filter: none;
+  border-bottom: none;
+  padding: 1rem 0;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Logo Container */
+.logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.header-logo {
+  width: 60px; /* match screenshot scale */
+  height: 60px;
+  object-fit: contain;
+  filter: brightness(1.2);
+  transition: transform 320ms ease, opacity 220ms ease, filter 220ms ease;
+}
+
+.logo-default {
+  opacity: 1;
+  transform: scale(1) rotate(0deg);
+}
+
+.logo-compact {
+  opacity: 1;
+  transform: scale(0.86) rotate(-6deg);
+  filter: drop-shadow(0 6px 14px rgba(0,0,0,0.25));
+}
+
+/* Brand expand/collapse behaviour */
+.brand {
+  gap: 10px;
+  transition: transform 300ms ease, gap 300ms ease;
+}
+.brand .brand-name {
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #FFFFFF;
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 300ms ease, transform 300ms ease;
+  background: linear-gradient(90deg, #FFFFFF 0%, #BBA5FF 45%, #7F5CFF 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-transform: uppercase;
+}
+.brand.brand-expanded .brand-name {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* Slight compact header height shift for motion feel */
+.header-default { padding: 1rem 0; }
+.header-compact { padding: 0.6rem 0; transition: padding 250ms ease; }
+
+/* Navigation */
+.navigation {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.nav-links {
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  gap: 3.25rem; /* More spacing to match screenshot */
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.25rem;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 0.5rem 0;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+}
+
+.nav-link:hover {
+  color: #a78bfa;
+  transform: translateY(-2px);
+}
+
+.nav-link.active {
+  color: #a78bfa;
+}
+
+/* centered underline for hover/active per item */
+.nav-link::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: -2px;
+  height: 4px;
+  width: 0;
+  background: #7F5CFF;
+  border-radius: 3px;
+  opacity: 0;
+  transition: width 220ms ease, opacity 200ms ease, background-color 200ms ease;
+}
+
+.nav-link:hover::after,
+.nav-link.active::after { width: 86px; opacity: 1; }
+
+/* Careers Button */
+.careers-button {
+  display: flex;
+  align-items: center;
+}
+
+.careers-btn {
+  background: linear-gradient(135deg, #6C4BFF, #7F5CFF);
+  color: white;
+  border: none;
+  padding: 0.9rem 1.8rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 15px rgba(49, 17, 136, 0.3);
+}
+
+.careers-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(49, 17, 136, 0.4);
+  background: linear-gradient(135deg, #7F5CFF, #906DFF);
+}
+
+.btn-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: brightness(1.2);
+}
+
+/* Main Content Area */
+.main-content {
+  padding-top: 80px; /* Account for fixed header */
+  min-height: calc(100vh - 80px);
+  position: relative;
+  z-index: 1; /* keep above watermark */
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .bg-watermark { width: 60vmin; height: 60vmin; right: 2%; }
+}
+
+@media (max-width: 768px) {
+  .header-content { padding: 0 1rem; }
+  .nav-links { gap: 1rem; }
+  .nav-link { font-size: 0.9rem; }
+  .careers-btn { padding: 0.6rem 1.2rem; font-size: 0.8rem; }
+  .bg-watermark { width: 50vmin; height: 50vmin; right: -5%; }
+}
+
+@media (max-width: 480px) {
+  .nav-links { gap: 0.5rem; }
+  .nav-link { font-size: 0.8rem; }
+  .header-logo { width: 32px; height: 32px; }
+  .bg-watermark { width: 42vmin; height: 42vmin; right: -10%; }
+}
