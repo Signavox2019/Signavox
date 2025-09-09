@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import YouTubeIcon from '@mui/icons-material/YouTube';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import wordmark from '../assets/company name.png';
 import missionImg from '../assets/mission.webp';
 import targetImg from '../assets/target.webp';
@@ -24,18 +19,24 @@ import aiNuclearImg from '../assets/ai-nuclear-energy.webp';
 import arIllustrationImg from '../assets/ar-illustration.webp';
 import businessHolographyImg from '../assets/business-holography.jpeg';
 
-const useScrollAnimation = () => {
+const useScrollAnimation = (threshold = 0.15, rootMargin = '0px 0px -50px 0px') => {
   const [isVisible, setIsVisible] = useState(false);
   const domRef = React.useRef();
 
   useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      });
-    }, { threshold: 0.2 });
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        });
+      }, 
+      { 
+        threshold,
+        rootMargin
+      }
+    );
 
     const { current } = domRef;
     if (current) {
@@ -47,7 +48,7 @@ const useScrollAnimation = () => {
         observer.unobserve(current);
       }
     };
-  }, []);
+  }, [threshold, rootMargin]);
 
   return [domRef, isVisible];
 };
@@ -117,7 +118,7 @@ const GlobalStyles = () => {
 
 // Row component for per-item scroll-triggered animations
 const AnimatedInsightRow = ({ item, index }) => {
-  const [rowRef, isRowVisible] = useScrollAnimation();
+  const [rowRef, isRowVisible] = useScrollAnimation(0.1, '0px 0px -80px 0px');
 
   return (
     <Box
@@ -134,9 +135,10 @@ const AnimatedInsightRow = ({ item, index }) => {
       <Box
         sx={{
           order: { xs: 2, md: 1 },
-          transform: isRowVisible ? 'translateX(0)' : 'translateX(-60px)',
+          transform: isRowVisible ? 'translateX(0) translateY(0)' : 'translateX(-80px) translateY(20px)',
           opacity: isRowVisible ? 1 : 0,
-          transition: `all ${650 + index * 120}ms cubic-bezier(0.22, 1, 0.36, 1)`
+          transition: `all ${800 + index * 150}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+          willChange: 'transform, opacity'
         }}
       >
         <Typography
@@ -148,7 +150,10 @@ const AnimatedInsightRow = ({ item, index }) => {
             fontSize: { xs: '1.35rem', md: '1.6rem' },
             display: 'flex',
             alignItems: 'center',
-            gap: 1.25
+            gap: 1.25,
+            transform: isRowVisible ? 'translateY(0)' : 'translateY(10px)',
+            opacity: isRowVisible ? 1 : 0,
+            transition: `all ${900 + index * 150}ms cubic-bezier(0.16, 1, 0.3, 1) 100ms`
           }}
         >
           <Box
@@ -161,7 +166,9 @@ const AnimatedInsightRow = ({ item, index }) => {
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontWeight: 900
+              fontWeight: 900,
+              transform: isRowVisible ? 'scale(1) rotate(0deg)' : 'scale(0.8) rotate(-5deg)',
+              transition: `all ${1000 + index * 150}ms cubic-bezier(0.34, 1.56, 0.64, 1) 150ms`
             }}
           >
             {item.k}
@@ -175,7 +182,10 @@ const AnimatedInsightRow = ({ item, index }) => {
             mt: 1.25,
             lineHeight: 1.85,
             letterSpacing: 0.2,
-            fontSize: { xs: '1.02rem', md: '1.1rem' }
+            fontSize: { xs: '1.02rem', md: '1.1rem' },
+            transform: isRowVisible ? 'translateY(0)' : 'translateY(15px)',
+            opacity: isRowVisible ? 1 : 0,
+            transition: `all ${1000 + index * 150}ms cubic-bezier(0.16, 1, 0.3, 1) 200ms`
           }}
         >
           {item.body}
@@ -186,27 +196,39 @@ const AnimatedInsightRow = ({ item, index }) => {
       <Box
         sx={{
           order: { xs: 1, md: 2 },
-          transform: isRowVisible ? 'translateX(0) scale(1)' : 'translateX(60px) scale(0.98)',
+          transform: isRowVisible ? 'translateX(0) scale(1) rotate(0deg)' : 'translateX(80px) scale(0.95) rotate(2deg)',
           opacity: isRowVisible ? 1 : 0,
-          transition: `all ${720 + index * 140}ms cubic-bezier(0.2, 0.8, 0.2, 1)`,
+          transition: `all ${850 + index * 150}ms cubic-bezier(0.16, 1, 0.3, 1) 50ms`,
           borderRadius: '16px',
           overflow: 'hidden',
           position: 'relative',
-          boxShadow: '0 18px 46px rgba(0,0,0,0.5)'
+          boxShadow: isRowVisible 
+            ? '0 25px 60px rgba(0,0,0,0.6)' 
+            : '0 10px 30px rgba(0,0,0,0.3)',
+          willChange: 'transform, opacity, box-shadow'
         }}
       >
         <Box
           component="img"
           src={item.img}
           alt={`insight-${item.k}`}
-          sx={{ width: '100%', height: { xs: 220, md: 280 }, objectFit: 'cover' }}
+          sx={{ 
+            width: '100%', 
+            height: { xs: 220, md: 280 }, 
+            objectFit: 'cover',
+            transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+            transform: isRowVisible ? 'scale(1)' : 'scale(1.05)'
+          }}
         />
         <Box
           sx={{
             position: 'absolute',
             inset: 0,
-            background: 'radial-gradient(600px 220px at 70% 20%, rgba(127,92,255,0.18) 0%, rgba(127,92,255,0) 60%)',
-            pointerEvents: 'none'
+            background: isRowVisible 
+              ? 'radial-gradient(600px 220px at 70% 20%, rgba(127,92,255,0.18) 0%, rgba(127,92,255,0) 60%)'
+              : 'radial-gradient(600px 220px at 70% 20%, rgba(127,92,255,0.05) 0%, rgba(127,92,255,0) 60%)',
+            pointerEvents: 'none',
+            transition: 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)'
           }}
         />
       </Box>
@@ -216,7 +238,7 @@ const AnimatedInsightRow = ({ item, index }) => {
 
 // Single point with its own scroll-triggered left entry
 const AnimatedPoint = ({ item, index }) => {
-  const [ref, visible] = useScrollAnimation();
+  const [ref, visible] = useScrollAnimation(0.1, '0px 0px -60px 0px');
   return (
     <Box ref={ref} sx={{ mb: index !== 2 ? 4 : 0 }}>
       <Typography
@@ -228,9 +250,10 @@ const AnimatedPoint = ({ item, index }) => {
           display: 'flex',
           alignItems: 'center',
           gap: 1.25,
-          transform: visible ? 'translateX(0)' : 'translateX(-56px)',
+          transform: visible ? 'translateX(0) translateY(0)' : 'translateX(-70px) translateY(15px)',
           opacity: visible ? 1 : 0,
-          transition: `all ${600 + index * 140}ms cubic-bezier(0.22, 1, 0.36, 1)`
+          transition: `all ${700 + index * 120}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+          willChange: 'transform, opacity'
         }}
       >
         <Box
@@ -239,11 +262,16 @@ const AnimatedPoint = ({ item, index }) => {
             height: 30,
             borderRadius: '8px',
             background: 'linear-gradient(135deg, #7F5CFF 0%, #00D0FF 100%)',
-            boxShadow: '0 8px 24px rgba(127,92,255,0.45)',
+            boxShadow: visible 
+              ? '0 12px 32px rgba(127,92,255,0.6)' 
+              : '0 6px 20px rgba(127,92,255,0.3)',
             display: 'inline-flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontWeight: 900
+            fontWeight: 900,
+            transform: visible ? 'scale(1) rotate(0deg)' : 'scale(0.8) rotate(-8deg)',
+            transition: `all ${800 + index * 120}ms cubic-bezier(0.34, 1.56, 0.64, 1) 100ms`,
+            willChange: 'transform, box-shadow'
           }}
         >
           {item.k}
@@ -258,15 +286,27 @@ const AnimatedPoint = ({ item, index }) => {
           lineHeight: 1.8,
           letterSpacing: 0.2,
           fontSize: { xs: '1rem', md: '1.1rem' },
-          transform: visible ? 'translateX(0)' : 'translateX(-36px)',
+          transform: visible ? 'translateX(0) translateY(0)' : 'translateX(-50px) translateY(10px)',
           opacity: visible ? 1 : 0,
-          transition: `all ${660 + index * 160}ms cubic-bezier(0.22, 1, 0.36, 1)`
+          transition: `all ${750 + index * 120}ms cubic-bezier(0.16, 1, 0.3, 1) 150ms`,
+          willChange: 'transform, opacity'
         }}
       >
         {item.body}
       </Typography>
       {index !== 2 && (
-        <Box sx={{ my: 3, height: 2, background: 'linear-gradient(90deg, rgba(127,92,255,0.5), rgba(127,92,255,0.0))' }} />
+        <Box 
+          sx={{ 
+            my: 3, 
+            height: 2, 
+            background: visible 
+              ? 'linear-gradient(90deg, rgba(127,92,255,0.8), rgba(127,92,255,0.2), rgba(127,92,255,0.0))'
+              : 'linear-gradient(90deg, rgba(127,92,255,0.3), rgba(127,92,255,0.0))',
+            transform: visible ? 'scaleX(1)' : 'scaleX(0)',
+            transformOrigin: 'left',
+            transition: `all ${600 + index * 120}ms cubic-bezier(0.16, 1, 0.3, 1) 200ms`
+          }} 
+        />
       )}
     </Box>
   );
@@ -274,30 +314,44 @@ const AnimatedPoint = ({ item, index }) => {
 
 // Single image with its own scroll-triggered right entry
 const AnimatedImage = ({ src, alt, height, delay = 0 }) => {
-  const [ref, visible] = useScrollAnimation();
+  const [ref, visible] = useScrollAnimation(0.1, '0px 0px -60px 0px');
   return (
     <Box
       ref={ref}
       sx={{
         borderRadius: '14px',
         overflow: 'hidden',
-        transform: visible ? 'translateX(0) scale(1)' : 'translateX(56px) scale(0.98)',
+        transform: visible ? 'translateX(0) scale(1) rotate(0deg)' : 'translateX(70px) scale(0.95) rotate(3deg)',
         opacity: visible ? 1 : 0,
-        transition: `all ${740 + delay}ms cubic-bezier(0.2, 0.8, 0.2, 1)`,
-        boxShadow: '0 14px 36px rgba(0,0,0,0.5)'
+        transition: `all ${800 + delay}ms cubic-bezier(0.16, 1, 0.3, 1)`,
+        boxShadow: visible 
+          ? '0 20px 50px rgba(0,0,0,0.6)' 
+          : '0 8px 25px rgba(0,0,0,0.3)',
+        willChange: 'transform, opacity, box-shadow'
       }}
     >
-      <Box component="img" src={src} alt={alt} sx={{ width: '100%', height: height, objectFit: 'cover' }} />
+      <Box 
+        component="img" 
+        src={src} 
+        alt={alt} 
+        sx={{ 
+          width: '100%', 
+          height: height, 
+          objectFit: 'cover',
+          transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+          transform: visible ? 'scale(1)' : 'scale(1.08)'
+        }} 
+      />
     </Box>
   );
 };
 
 const Home = () => {
-  const [missionRef, isMissionVisible] = useScrollAnimation();
-  const [whatWeDoRef, isWhatWeDoVisible] = useScrollAnimation();
-  const [solutionsRef, isSolutionsVisible] = useScrollAnimation();
-  const [businessRef, isBusinessVisible] = useScrollAnimation();
-  const [insightsRef, isInsightsVisible] = useScrollAnimation();
+  const [missionRef, isMissionVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [whatWeDoRef, isWhatWeDoVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [solutionsRef, isSolutionsVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [businessRef, isBusinessVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [insightsRef, isInsightsVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
 
   return (
     <>
@@ -316,30 +370,38 @@ const Home = () => {
                   <Box
           style={{ isolation: 'isolate' }}
           sx={{
-            animation: 'slideInFromLeft 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+            animation: 'slideInFromLeft 2.8s cubic-bezier(0.16, 1, 0.3, 1)',
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
             '@keyframes slideInFromLeft': {
               '0%': {
                 opacity: 0,
-                transform: 'translateX(-150px) scale(0.8)'
+                transform: 'translateX(-200px) scale(0.7) rotate(-5deg)'
               },
-              '30%': {
-                opacity: 0.4,
-                transform: 'translateX(-80px) scale(0.9)'
+              '20%': {
+                opacity: 0.3,
+                transform: 'translateX(-120px) scale(0.85) rotate(-2deg)'
+              },
+              '40%': {
+                opacity: 0.6,
+                transform: 'translateX(-60px) scale(0.95) rotate(-1deg)'
               },
               '60%': {
-                opacity: 0.8,
-                transform: 'translateX(5px) scale(1.02)'
+                opacity: 0.85,
+                transform: 'translateX(10px) scale(1.03) rotate(0.5deg)'
               },
               '80%': {
                 opacity: 0.95,
-                transform: 'translateX(-2px) scale(0.99)'
+                transform: 'translateX(-3px) scale(0.99) rotate(-0.2deg)'
+              },
+              '90%': {
+                opacity: 0.98,
+                transform: 'translateX(1px) scale(1.005) rotate(0.1deg)'
               },
               '100%': {
                 opacity: 1,
-                transform: 'translateX(0) scale(1)'
+                transform: 'translateX(0) scale(1) rotate(0deg)'
               }
             }
           }}
@@ -374,27 +436,31 @@ const Home = () => {
               letterSpacing: 0.5,
               color: '#ffffff',
               textAlign: 'center',
-              animation: 'slideInFromLeft 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both',
+              animation: 'slideInFromLeft 2.2s cubic-bezier(0.16, 1, 0.3, 1) both 0.6s',
               '@keyframes slideInFromLeft': {
                 '0%': {
                   opacity: 0,
-                  transform: 'translateX(-120px) scale(0.9)'
+                  transform: 'translateX(-150px) translateY(20px) scale(0.85)'
                 },
-                '40%': {
-                  opacity: 0.5,
-                  transform: 'translateX(-60px) scale(0.95)'
+                '30%': {
+                  opacity: 0.4,
+                  transform: 'translateX(-80px) translateY(10px) scale(0.92)'
                 },
-                '70%': {
-                  opacity: 0.9,
-                  transform: 'translateX(3px) scale(1.01)'
+                '60%': {
+                  opacity: 0.8,
+                  transform: 'translateX(5px) translateY(-2px) scale(1.02)'
                 },
-                '85%': {
+                '80%': {
+                  opacity: 0.95,
+                  transform: 'translateX(-2px) translateY(1px) scale(0.998)'
+                },
+                '90%': {
                   opacity: 0.98,
-                  transform: 'translateX(-1px) scale(0.995)'
+                  transform: 'translateX(0.5px) translateY(-0.5px) scale(1.001)'
                 },
                 '100%': {
                   opacity: 1,
-                  transform: 'translateX(0) scale(1)'
+                  transform: 'translateX(0) translateY(0) scale(1)'
                 }
               }
             }}
@@ -508,9 +574,10 @@ const Home = () => {
         <Box
           ref={missionRef}
           sx={{
-            transform: isMissionVisible ? 'translateX(0)' : 'translateX(-50px)',
+            transform: isMissionVisible ? 'translateX(0) translateY(0) scale(1)' : 'translateX(-80px) translateY(30px) scale(0.95)',
             opacity: isMissionVisible ? 1 : 0,
-            transition: isMissionVisible ? 'all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
+            transition: isMissionVisible ? 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+            willChange: 'transform, opacity'
           }}
           className="rounded-2xl overflow-hidden shadow-xl shadow-purple-900/30 ring-1 ring-white/10"
         >
@@ -524,9 +591,10 @@ const Home = () => {
 
         <Box
           sx={{
-            transform: isMissionVisible ? 'translateX(0)' : 'translateX(50px)',
+            transform: isMissionVisible ? 'translateX(0) translateY(0)' : 'translateX(80px) translateY(30px)',
             opacity: isMissionVisible ? 1 : 0,
-            transition: isMissionVisible ? 'all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
+            transition: isMissionVisible ? 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' : 'none',
+            willChange: 'transform, opacity'
           }}
         >
           <Typography
@@ -559,9 +627,10 @@ const Home = () => {
         <Box
           ref={whatWeDoRef}
           sx={{
-            transform: isWhatWeDoVisible ? 'translateX(0)' : 'translateX(-50px)',
+            transform: isWhatWeDoVisible ? 'translateX(0) translateY(0) scale(1)' : 'translateX(-80px) translateY(30px) scale(0.95)',
             opacity: isWhatWeDoVisible ? 1 : 0,
-            transition: isWhatWeDoVisible ? 'all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
+            transition: isWhatWeDoVisible ? 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+            willChange: 'transform, opacity'
           }}
           className="rounded-2xl overflow-hidden shadow-xl shadow-purple-900/30 ring-1 ring-white/10"
         >
@@ -575,14 +644,15 @@ const Home = () => {
 
         <Box
           sx={{
-            transform: isWhatWeDoVisible ? 'translateX(0)' : 'translateX(50px)',
+            transform: isWhatWeDoVisible ? 'translateX(0) translateY(0)' : 'translateX(80px) translateY(30px)',
             opacity: isWhatWeDoVisible ? 1 : 0,
-            transition: isWhatWeDoVisible ? 'all 1.8s cubic-bezier(0.25, 0.46, 0.45, 0.94)' : 'none',
+            transition: isWhatWeDoVisible ? 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' : 'none',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'flex-start',
             height: '100%',
-            minHeight: { xs: '420px', md: '460px' }
+            minHeight: { xs: '420px', md: '460px' },
+            willChange: 'transform, opacity'
           }}
         >
           <Typography
@@ -660,11 +730,25 @@ const Home = () => {
               boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
               border: 'none',
               backdropFilter: 'blur(6px)',
-              transition: 'transform 400ms ease, box-shadow 400ms ease',
+              transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
               cursor: 'pointer',
+              transform: 'translateY(0) scale(1)',
+              willChange: 'transform, box-shadow',
               ':hover': {
-                transform: 'translateY(-6px) scale(1.01)',
-                boxShadow: '0 18px 44px rgba(0,0,0,0.45)'
+                transform: 'translateY(-12px) scale(1.02)',
+                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                '& .service-image': {
+                  transform: 'scale(1.08)',
+                  filter: 'brightness(0.4) saturate(1.2)'
+                },
+                '& .service-overlay': {
+                  opacity: 1,
+                  transform: 'translateY(0)'
+                },
+                '& .service-content': {
+                  opacity: 1,
+                  transform: 'translateY(0)'
+                }
               }
             }}
           >
@@ -672,19 +756,21 @@ const Home = () => {
             <Box sx={{ position: 'relative', height: { xs: 360, md: 430 }, overflow: 'hidden' }}>
               <Box
                 component="img"
+                className="service-image"
                 src={svc.img}
                 alt={svc.title}
                 sx={{
                   position: 'absolute', inset: 0,
                   width: '100%', height: '100%', objectFit: 'cover',
-                  transform: 'scale(1.03)',
-                  transition: 'opacity 350ms ease, transform 450ms ease',
-                  '.group:hover &': { opacity: 0.3, transform: 'scale(1.06)' }
+                  transform: 'scale(1.05)',
+                  transition: 'all 0.7s cubic-bezier(0.16, 1, 0.3, 1)',
+                  willChange: 'transform, filter'
                 }}
               />
               
               {/* Heading slides down from top on hover */}
               <Box
+                className="service-overlay"
                 sx={{
                   position: 'absolute',
                   top: 0,
@@ -692,10 +778,11 @@ const Home = () => {
                   right: 0,
                   p: 2.5,
                   zIndex: 2,
-                  background: 'linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.0) 100%)',
+                  background: 'linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0.0) 100%)',
                   transform: 'translateY(-100%)',
-                  transition: 'transform 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                  '.group:hover &': { transform: 'translateY(0)' }
+                  opacity: 0,
+                  transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                  willChange: 'transform, opacity'
                 }}
               >
                 <Typography sx={{ 
@@ -703,7 +790,9 @@ const Home = () => {
                   fontWeight: 800, 
                   fontSize: { xs: '1.15rem', md: '1.25rem' }, 
                   lineHeight: 1.2,
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  transform: 'translateY(10px)',
+                  transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s'
                 }}>
                   {svc.title}
                 </Typography>
@@ -711,6 +800,7 @@ const Home = () => {
 
               {/* Content slides up from bottom on hover */}
               <Box
+                className="service-content"
                 sx={{
                   position: 'absolute',
                   bottom: 0,
@@ -718,17 +808,20 @@ const Home = () => {
                   right: 0,
                   p: 3,
                   zIndex: 2,
-                  background: 'linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.0) 100%)',
+                  background: 'linear-gradient(0deg, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0.0) 100%)',
                   transform: 'translateY(100%)',
-                  transition: 'transform 400ms cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                  '.group:hover &': { transform: 'translateY(0)' }
+                  opacity: 0,
+                  transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
+                  willChange: 'transform, opacity'
                 }}
               >
                 <Typography sx={{ 
                   color: 'rgba(255,255,255,0.95)', 
                   fontSize: { xs: '0.95rem', md: '1rem' }, 
                   lineHeight: 1.6,
-                  textAlign: 'center'
+                  textAlign: 'center',
+                  transform: 'translateY(15px)',
+                  transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s'
                 }}>
                   {svc.text}
                 </Typography>
@@ -742,8 +835,12 @@ const Home = () => {
                 borderRadius: '1.25rem',
                 pointerEvents: 'none',
                 boxShadow: `inset 0 0 0 0px ${svc.color}00`,
-                transition: 'box-shadow 400ms ease',
-                '.group:hover &': { boxShadow: `inset 0 0 0 2px ${svc.color}aa` }
+                transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                willChange: 'box-shadow',
+                '.group:hover &': { 
+                  boxShadow: `inset 0 0 0 3px ${svc.color}cc, 0 0 20px ${svc.color}40`,
+                  transform: 'scale(1.01)'
+                }
               }}
             />
           </Box>
@@ -826,25 +923,40 @@ const Home = () => {
             alignItems: 'stretch',
             gap: { xs: 2, md: 3 },
             p: { xs: 1.5, md: 2 },
-            animation: 'marqueeScroll 26s linear infinite',
+            animation: 'marqueeScroll 35s linear infinite',
             '@keyframes marqueeScroll': {
               '0%': { transform: 'translateX(0)' },
               '100%': { transform: 'translateX(-50%)' }
             },
             // Duplicate content for seamless loop
-            width: '200%'
+            width: '200%',
+            willChange: 'transform'
           }}
         >
           {[missionImg, whatWeDoImg, aiImg, digitalImg].concat([missionImg, whatWeDoImg, aiImg, digitalImg]).map((imgSrc, i) => (
-            <Box key={i} sx={{ flex: '0 0 auto', width: { xs: '75%', sm: '55%', md: '35%' } }}>
+            <Box 
+              key={i} 
+              sx={{ 
+                flex: '0 0 auto', 
+                width: { xs: '75%', sm: '55%', md: '35%' },
+                transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                ':hover': {
+                  transform: 'scale(1.05) translateY(-8px)'
+                }
+              }}
+            >
               <Box
                 component="img"
                 src={imgSrc}
                 alt={`showcase-${i}`}
                 sx={{
-                  width: '100%', height: { xs: 220, md: 320 }, objectFit: 'cover',
+                  width: '100%', 
+                  height: { xs: 220, md: 320 }, 
+                  objectFit: 'cover',
                   borderRadius: { xs: '10px', md: '14px' },
-                  boxShadow: '0 8px 28px rgba(0,0,0,0.35)'
+                  boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
+                  transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                  willChange: 'transform, box-shadow'
                 }}
               />
             </Box>
@@ -868,10 +980,11 @@ const Home = () => {
         <Box
           sx={{
             order: { xs: 2, lg: 1 },
-            transform: isSolutionsVisible ? 'translate(0, 0) scale(1) rotate(0deg)' : 'translate(180px, -120px) scale(0.96) rotate(-3deg)',
+            transform: isSolutionsVisible ? 'translate(0, 0) scale(1) rotate(0deg)' : 'translate(200px, -150px) scale(0.9) rotate(-5deg)',
             opacity: isSolutionsVisible ? 1 : 0,
-            transition: 'all 600ms cubic-bezier(0.2, 0.8, 0.2, 1)',
-            filter: isSolutionsVisible ? 'drop-shadow(0 24px 60px rgba(0,0,0,0.45))' : 'none'
+            transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1)',
+            filter: isSolutionsVisible ? 'drop-shadow(0 30px 80px rgba(0,0,0,0.6))' : 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))',
+            willChange: 'transform, opacity, filter'
           }}
           className="rounded-2xl overflow-hidden"
         >
@@ -892,9 +1005,10 @@ const Home = () => {
         <Box
           sx={{
             order: { xs: 1, lg: 2 },
-            transform: isSolutionsVisible ? 'translate(0, 0) rotate(0deg)' : 'translate(-180px, 120px) rotate(3deg)',
+            transform: isSolutionsVisible ? 'translate(0, 0) rotate(0deg)' : 'translate(-200px, 150px) rotate(5deg)',
             opacity: isSolutionsVisible ? 1 : 0,
-            transition: 'all 580ms cubic-bezier(0.2, 0.8, 0.2, 1) 60ms'
+            transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s',
+            willChange: 'transform, opacity'
           }}
         >
           <Typography
@@ -963,9 +1077,10 @@ const Home = () => {
         <Box
           sx={{
             order: { xs: 2, lg: 1 },
-            transform: isBusinessVisible ? 'translate(0, 0) rotate(0deg) scale(1)' : 'translate(180px, 120px) rotate(2deg) scale(0.98)',
+            transform: isBusinessVisible ? 'translate(0, 0) rotate(0deg) scale(1)' : 'translate(200px, 150px) rotate(3deg) scale(0.95)',
             opacity: isBusinessVisible ? 1 : 0,
-            transition: 'all 560ms cubic-bezier(0.22, 1, 0.36, 1)'
+            transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1)',
+            willChange: 'transform, opacity'
           }}
         >
           <Typography
@@ -1002,10 +1117,11 @@ const Home = () => {
         <Box
           sx={{
             order: { xs: 1, lg: 2 },
-            transform: isBusinessVisible ? 'translate(0, 0) scale(1) rotate(0deg)' : 'translate(-200px, -120px) scale(0.96) rotate(-4deg)',
+            transform: isBusinessVisible ? 'translate(0, 0) scale(1) rotate(0deg)' : 'translate(-200px, -150px) scale(0.9) rotate(-5deg)',
             opacity: isBusinessVisible ? 1 : 0,
-            transition: 'all 600ms cubic-bezier(0.2, 0.8, 0.2, 1) 60ms',
-            filter: isBusinessVisible ? 'drop-shadow(0 24px 60px rgba(0,0,0,0.45))' : 'none'
+            transition: 'all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s',
+            filter: isBusinessVisible ? 'drop-shadow(0 30px 80px rgba(0,0,0,0.6))' : 'drop-shadow(0 10px 30px rgba(0,0,0,0.2))',
+            willChange: 'transform, opacity, filter'
           }}
           className="rounded-2xl overflow-hidden"
         >
@@ -1108,9 +1224,9 @@ const Home = () => {
                   borderRadius: '22px',
                   padding: { xs: 3, md: 3.25 },
                   boxShadow: '0 14px 38px rgba(0,0,0,0.5)',
-                  transform: visible ? 'translateY(0)' : `translateY(${rIdx === 0 ? '-24px' : '24px'})`,
+                  transform: visible ? 'translateY(0) scale(1)' : `translateY(${rIdx === 0 ? '-40px' : '40px'}) scale(0.95)`,
                   opacity: visible ? 1 : 0,
-                  transition: `all ${520 + cIdx * 120}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                  transition: `all ${600 + cIdx * 100}ms cubic-bezier(0.16, 1, 0.3, 1)`,
                   backdropFilter: 'blur(4px)',
                   '&:before': {
                     content: '""',
@@ -1122,9 +1238,13 @@ const Home = () => {
                     background: 'radial-gradient(circle, rgba(127,92,255,0.25) 0%, rgba(127,92,255,0.0) 60%)'
                   },
                   ':hover': {
-                    transform: 'translateY(-6px)',
-                    boxShadow: '0 24px 54px rgba(0,0,0,0.6)'
-                  }
+                    transform: 'translateY(-12px) scale(1.02)',
+                    boxShadow: '0 30px 70px rgba(0,0,0,0.7)',
+                    '&:before': {
+                      background: 'radial-gradient(circle, rgba(127,92,255,0.4) 0%, rgba(127,92,255,0.1) 60%)'
+                    }
+                  },
+                  willChange: 'transform, box-shadow'
                 }}
               >
                 <Typography component="h3" sx={{ color: '#ffffff', fontWeight: 900, letterSpacing: 0.2, fontSize: { xs: '1.3rem', md: '1.4rem' }, mb: 1.25 }}>
@@ -1139,114 +1259,6 @@ const Home = () => {
         </Box>
       ))}
     </Container>
-    {/* Footer-like section (as per screenshot) */}
-    <Box
-      sx={{
-        mt: { xs: 6, md: 10 },
-        pt: { xs: 8, md: 12 },
-        pb: { xs: 6, md: 10 }
-      }}
-   >
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-            gap: { xs: 3, md: 6 }
-          }}
-        >
-          {/* Left links column */}
-          <Box>
-            {['About', 'Contact', 'Careers', 'Location', 'SCL'].map((label, i) => (
-              <Typography
-                key={label}
-                component="a"
-                href="#"
-                sx={{
-                  display: 'block',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  fontSize: { xs: '1.05rem', md: '1.1rem' },
-                  mb: i !== 4 ? 1.75 : 0,
-                  ':hover': { textDecoration: 'underline', opacity: 0.9 }
-                }}
-              >
-                {label}
-              </Typography>
-            ))}
-          </Box>
-
-          {/* Middle links column */}
-          <Box>
-            {['Privacy Policy', 'Terms of Use', 'Cookies', 'Capabilities', 'industries'].map((label, i) => (
-              <Typography
-                key={label}
-                component="a"
-                href="#"
-                sx={{
-                  display: 'block',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  fontSize: { xs: '1.05rem', md: '1.1rem' },
-                  mb: i !== 4 ? 1.75 : 0,
-                  ':hover': { textDecoration: 'underline', opacity: 0.9 }
-                }}
-              >
-                {label}
-              </Typography>
-            ))}
-          </Box>
-
-          {/* Right social column */}
-          <Box sx={{ mt: { xs: 2, md: 0 } }}>
-            <Typography
-              component="p"
-              sx={{
-                color: '#ffffff',
-                fontWeight: 800,
-                letterSpacing: 0.3,
-                fontSize: { xs: '1.2rem', md: '1.3rem' },
-                mb: 1.5
-              }}
-            >
-              Follow us
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
-                <InstagramIcon />
-              </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
-                <TwitterIcon />
-              </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
-                <FacebookIcon />
-              </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
-                <YouTubeIcon />
-              </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
-                <LinkedInIcon />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Bottom row */}
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mt: { xs: 6, md: 8 },
-            color: '#ffffff'
-          }}
-        >
-          <Typography component="p" sx={{ fontSize: { xs: '0.95rem', md: '1rem' } }}>
-            © 2025 Signavox. All rights Reserved
-          </Typography>
-        </Box>
-      </Container>
-    </Box>
     </>
   );
 };
