@@ -7,6 +7,22 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 
 const Footer = () => {
+  const leftLinks = [
+    { label: 'About', href: '#' },
+    { label: 'Contact', href: '#' },
+    { label: 'Careers', href: '#' },
+    { label: 'Location', href: '#' },
+    { label: 'Signavox Career Ladder', href: '#' }
+  ];
+
+  const midLinks = [
+    { label: 'Privacy Policy', href: '#' },
+    { label: 'Terms of Use', href: '#' },
+    { label: 'Cookies', href: '#' },
+    { label: 'Capabilities', href: '#' },
+    { label: 'industries', href: '#' }
+  ];
+
   return (
     <Box
       sx={{
@@ -20,53 +36,58 @@ const Footer = () => {
           sx={{
             display: 'grid',
             gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' },
-            gap: { xs: 3, md: 6 }
+            gap: { xs: 3, md: 6 },
+            width: '70%',
           }}
         >
           {/* Left links column */}
           <Box>
-            {['About', 'Contact', 'Careers', 'Location', 'Signavox Career Ladder'].map((label, i) => (
-              <Typography
-                key={label}
-                component="a"
-                href="#"
-                sx={{
-                  display: 'block',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  fontSize: { xs: '1.05rem', md: '1.1rem' },
-                  mb: i !== 4 ? 1.75 : 0,
-                  ':hover': { textDecoration: 'underline', opacity: 0.9 }
-                }}
-              >
-                {label}
-              </Typography>
+            {leftLinks.map((item, i) => (
+              <Box key={item.label} sx={{ mb: i !== leftLinks.length - 1 ? 1.75 : 0 }}>
+                <Typography
+                  component="a"
+                  href={item.href}
+                  sx={{
+                    display: 'inline-block',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    fontSize: { xs: '1.05rem', md: '1.1rem' },
+                    outline: 'none',
+                    ':hover': { textDecoration: 'underline', opacity: 0.95 },
+                    ':focus-visible': { textDecoration: 'underline', outline: 'none' }
+                  }}
+                >
+                  {item.label}
+                </Typography>
+              </Box>
             ))}
           </Box>
 
           {/* Middle links column */}
           <Box>
-            {['Privacy Policy', 'Terms of Use', 'Cookies', 'Capabilities', 'industries'].map((label, i) => (
-              <Typography
-                key={label}
-                component="a"
-                href="#"
-                sx={{
-                  display: 'block',
-                  color: '#ffffff',
-                  textDecoration: 'none',
-                  fontSize: { xs: '1.05rem', md: '1.1rem' },
-                  mb: i !== 4 ? 1.75 : 0,
-                  ':hover': { textDecoration: 'underline', opacity: 0.9 }
-                }}
-              >
-                {label}
-              </Typography>
+            {midLinks.map((item, i) => (
+              <Box key={item.label} sx={{ mb: i !== midLinks.length - 1 ? 1.75 : 0 }}>
+                <Typography
+                  component="a"
+                  href={item.href}
+                  sx={{
+                    display: 'inline-block',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    fontSize: { xs: '1.05rem', md: '1.1rem' },
+                    outline: 'none',
+                    ':hover': { textDecoration: 'underline', opacity: 0.95 },
+                    ':focus-visible': { textDecoration: 'underline', outline: 'none' }
+                  }}
+                >
+                  {item.label}
+                </Typography>
+              </Box>
             ))}
           </Box>
 
           {/* Right social column */}
-          <Box sx={{ mt: { xs: 2, md: 0 } }}>
+          <Box sx={{ mt: { xs: 2, md: 0 }, position: 'relative', zIndex: 10 }}>
             <Typography
               component="p"
               sx={{
@@ -80,19 +101,19 @@ const Footer = () => {
               Follow us
             </Typography>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
+              <Box component="a" href="#" sx={{ color: '#fff', outline: 'none', ':focus-visible': { outline: 'none' } }}>
                 <InstagramIcon />
               </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
+              <Box component="a" href="#" sx={{ color: '#fff', outline: 'none', ':focus-visible': { outline: 'none' } }}>
                 <TwitterIcon />
               </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
+              <Box component="a" href="#" sx={{ color: '#fff', outline: 'none', ':focus-visible': { outline: 'none' } }}>
                 <FacebookIcon />
               </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
+              <Box component="a" href="#" sx={{ color: '#fff', outline: 'none', ':focus-visible': { outline: 'none' } }}>
                 <YouTubeIcon />
               </Box>
-              <Box component="a" href="#" sx={{ color: '#fff' }}>
+              <Box component="a" href="#" sx={{ color: '#fff', outline: 'none', ':focus-visible': { outline: 'none' } }}>
                 <LinkedInIcon />
               </Box>
             </Box>

@@ -10,16 +10,31 @@
   backdrop-filter: none;
   border-bottom: none;
   padding: 1.5rem 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              backdrop-filter 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   min-height: 80px;
+  will-change: background, backdrop-filter, padding, box-shadow;
+  transform: translateZ(0);
+}
+
+/* Light translucent background with subtle blur when at top */
+/* Optional translucent variant (currently unused at initial load) */
+.navbar-translucent {
+  background: rgba(10, 8, 30, 0.35);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .navbar-scrolled {
-  background: rgba(10, 8, 30, 0.95);
-  backdrop-filter: blur(20px);
+  background: rgba(10, 8, 30, 0.75);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   border-bottom: 1px solid rgba(127, 92, 255, 0.2);
   padding: 1rem 0;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
 }
 
 .navbar-container {
@@ -37,39 +52,146 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  border:none;
+  outline:none;
+  box-shadow: none;
 }
 
 .logo-link {
   display: flex;
   align-items: center;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: transform 0.18s ease, filter 0.18s ease;
+  will-change: transform;
+  cursor: pointer;
 }
 
 .logo-link:hover {
   transform: scale(1.05);
 }
 
+.logo-link:active {
+  transform: scale(0.97);
+  filter: brightness(0.95);
+}
+
+.logo-link:focus,
+.logo-link:focus-visible,
+.logo-link:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  border-radius: 8px;
+}
+
 .logo-img {
   object-fit: contain;
   filter: brightness(1.2);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1), filter 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, filter;
+  transform: translateZ(0);
 }
 
-.logo-default {
-  width: 80px;
-  height: 80px;
-  opacity: 1;
-  transform: scale(1) rotate(0deg);
+/* Stacked logo layers */
+.logo-stack {
+  position: relative;
+  width: 200px; /* increased width for split animation */
+  height: 44px;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
-.logo-scrolled {
-  width: 40px;
-  height: 40px;
-  opacity: 1;
-  transform: scale(1) rotate(0deg);
-  filter: brightness(1.3) drop-shadow(0 4px 12px rgba(127, 92, 255, 0.3));
+.logo-layer {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  transform: translateY(-50%) translateZ(0);
 }
+
+.logo-icon {
+  width: 44px;
+  height: 44px;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1), filter 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform, opacity, filter;
+}
+
+/* Wordmark container - direct image reveal */
+.logo-wordmark-container {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  width: 200px;
+  height: 44px;
+}
+
+.logo-wordmark-left {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.logo-wordmark-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1), filter 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  will-change: transform, filter;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+
+/* Icon animation - slides out to left with rotation */
+.logo-stack.is-top .logo-icon { 
+  opacity: 1; 
+  transform: translateY(-50%) translateX(0) translateZ(0) scale(1) rotate(0deg);
+  filter: drop-shadow(0 4px 12px rgba(127, 92, 255, 0.3));
+}
+
+.logo-stack.is-scrolled .logo-icon { 
+  opacity: 0; 
+  transform: translateY(-50%) translateX(-60px) translateZ(0) scale(0.8) rotate(-12deg);
+  filter: drop-shadow(0 2px 8px rgba(127, 92, 255, 0.2));
+}
+
+/* Wordmark container animations - single smooth motion */
+.logo-stack.is-top .logo-wordmark-container { 
+  opacity: 0; 
+  transform: translateY(-50%) translateX(-100%) translateZ(0) scale(0.86) rotateY(-8deg);
+}
+
+.logo-stack.is-scrolled .logo-wordmark-container { 
+  opacity: 1; 
+  transform: translateY(-50%) translateX(0) translateZ(0) scale(1) rotateY(0deg);
+  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Image appears directly with container - no separate animation */
+.logo-stack.is-scrolled .logo-wordmark-left {
+  transform: translateX(0) scale(1);
+}
+
+.logo-stack.is-scrolled .logo-wordmark-img {
+  filter: brightness(1) contrast(1);
+  transform: scale(1);
+}
+
+
+/* Visibility classes for smooth transitions */
+.logo-wordmark-container.show { opacity: 1; }
+.logo-wordmark-container.hide { opacity: 0; }
+.logo-icon.show { opacity: 1; }
+.logo-icon.hide { opacity: 0; }
 
 /* Navigation Styles */
 .navbar-nav {
@@ -97,7 +219,7 @@
   text-decoration: none;
   font-weight: 600;
   font-size: 1.1rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: color 0.25s cubic-bezier(0.4, 0, 0.2, 1), transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   padding: 0.75rem 1rem;
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
@@ -106,11 +228,12 @@
   align-items: center;
   gap: 0.5rem;
   cursor: pointer;
+  will-change: transform, color;
 }
 
 .nav-link:hover {
   color: #7F5CFF;
-  transform: translateY(-1px);
+  transform: translateY(-1px) translateZ(0);
 }
 
 .nav-link.active {
@@ -137,18 +260,19 @@
   content: '';
   position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleX(0);
   bottom: -8px;
   height: 3px;
-  width: 0;
+  width: 80%;
   background: linear-gradient(90deg, #7F5CFF, #BBA5FF);
   border-radius: 2px;
   opacity: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-link:hover::after {
-  width: 80%;
+  transform: translateX(-50%) scaleX(1);
   opacity: 1;
 }
 
@@ -160,11 +284,205 @@
 .dropdown-arrow {
   transition: transform 0.3s ease;
   opacity: 0.8;
+  will-change: transform;
 }
 
-.dropdown:hover .dropdown-arrow {
+.dropdown:hover .dropdown-arrow,
+.dropdown-arrow.open {
   transform: rotate(180deg);
   opacity: 1;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: fixed;
+  left: 0;
+  right: 0;
+  background: rgba(10, 8, 30, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(127, 92, 255, 0.2);
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  padding: 2rem 0;
+  width: 100vw;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1001;
+}
+
+.dropdown-menu.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Dropdown Header */
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  padding: 0 2rem;
+  max-width: 1400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.dropdown-title {
+  color: #ffffff;
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Material-UI Box components handle their own styling */
+
+.dropdown-content {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* Specific layout for Who we are dropdown (3 columns) */
+.dropdown-menu .dropdown-content:has(.dropdown-section:nth-child(3):last-child) {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.dropdown-section h4 {
+  color: #7F5CFF;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dropdown-section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.dropdown-section li {
+  margin-bottom: 0.75rem;
+}
+
+.dropdown-section a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition: color 0.25s ease, transform 0.25s ease;
+  display: block;
+  padding: 0.25rem 0;
+}
+
+.dropdown-section a:hover {
+  color: #BBA5FF;
+  transform: translateX(5px);
+}
+
+.dropdown-section a:focus,
+.dropdown-section a:focus-visible,
+.dropdown-section a:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Mobile Dropdown Menu */
+.mobile-dropdown-menu {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(127, 92, 255, 0.05);
+  border-radius: 8px;
+  margin-top: 0.5rem;
+}
+
+/* Mobile Dropdown Header */
+.mobile-dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1rem 0 1rem;
+}
+
+.mobile-dropdown-title {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+/* Material-UI Box components handle their own styling */
+
+.mobile-dropdown-menu.show {
+  max-height: 500px;
+}
+
+.mobile-dropdown-content {
+  padding: 1rem;
+}
+
+.mobile-dropdown-section {
+  margin-bottom: 1.5rem;
+}
+
+.mobile-dropdown-section:last-child {
+  margin-bottom: 0;
+}
+
+.mobile-dropdown-section h4 {
+  color: #7F5CFF;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mobile-dropdown-section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mobile-dropdown-section li {
+  margin-bottom: 0.5rem;
+}
+
+.mobile-dropdown-section a {
+  color: #ffffff;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.25s ease, transform 0.25s ease;
+  display: block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+}
+
+.mobile-dropdown-section a:hover {
+  color: #BBA5FF;
+  background: rgba(127, 92, 255, 0.1);
+  transform: translateX(5px);
+}
+
+.mobile-dropdown-section a:focus,
+.mobile-dropdown-section a:focus-visible,
+.mobile-dropdown-section a:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
 }
 
 /* Mobile Menu Button */
@@ -212,13 +530,14 @@
   background: rgba(10, 8, 30, 0.98);
   backdrop-filter: blur(20px);
   z-index: 1000;
-  transform: translateX(-100%);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translate3d(-100%, 0, 0);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   padding-top: 100px;
+  will-change: transform;
 }
 
 .mobile-menu.active {
-  transform: translateX(0);
+  transform: translate3d(0, 0, 0);
 }
 
 .mobile-menu-content {
@@ -247,12 +566,14 @@
   justify-content: space-between;
   padding: 1rem;
   border-radius: 8px;
-  transition: all 0.3s ease;
+  transition: color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+  will-change: transform, color, background;
 }
 
 .mobile-nav-link:hover {
   color: #7F5CFF;
-  transform: translateX(10px);
+  transform: translate3d(10px, 0, 0);
+  background: rgba(127, 92, 255, 0.08);
 }
 
 .mobile-nav-link.active {
@@ -275,14 +596,32 @@
     padding: 0.6rem 0.8rem;
   }
   
-  .logo-default {
-    width: 70px;
-    height: 70px;
+  .logo-stack { width: 180px; height: 40px; }
+  .logo-icon { width: 40px; height: 40px; }
+  .logo-wordmark-container { width: 180px; height: 40px; }
+  
+  .dropdown-menu {
+    padding: 1.5rem 0;
   }
   
-  .logo-scrolled {
-    width: 40px;
-    height: 40px;
+  .dropdown-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 0 1.5rem;
+  }
+  
+  .dropdown-header {
+    padding: 0 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .dropdown-title {
+    font-size: 1.5rem;
+  }
+  
+  /* Who we are dropdown on tablet */
+  .dropdown-menu .dropdown-content:has(.dropdown-section:nth-child(3):last-child) {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -304,14 +643,27 @@
     display: flex;
   }
   
-  .logo-default {
-    width: 60px;
-    height: 60px;
+  .logo-stack { width: 160px; height: 36px; }
+  .logo-icon { width: 36px; height: 36px; }
+  .logo-wordmark-container { width: 160px; height: 36px; }
+  
+  .dropdown-menu {
+    padding: 1rem 0;
   }
   
-  .logo-scrolled {
-    width: 35px;
-    height: 35px;
+  .dropdown-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    padding: 0 1rem;
+  }
+  
+  .dropdown-header {
+    padding: 0 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .dropdown-title {
+    font-size: 1.25rem;
   }
 }
 
@@ -325,15 +677,9 @@
     padding: 0 0.8rem;
   }
   
-  .logo-default {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .logo-scrolled {
-    width: 30px;
-    height: 30px;
-  }
+  .logo-stack { width: 140px; height: 34px; }
+  .logo-icon { width: 34px; height: 34px; }
+  .logo-wordmark-container { width: 140px; height: 34px; }
   
   .mobile-menu-content {
     padding: 0 1rem;
@@ -355,15 +701,9 @@
     padding: 0 0.6rem;
   }
   
-  .logo-default {
-    width: 45px;
-    height: 45px;
-  }
-  
-  .logo-scrolled {
-    width: 28px;
-    height: 28px;
-  }
+  .logo-stack { width: 120px; height: 32px; }
+  .logo-icon { width: 32px; height: 32px; }
+  .logo-wordmark-container { width: 120px; height: 32px; }
   
   .mobile-menu-btn {
     width: 25px;
@@ -373,5 +713,54 @@
   .mobile-nav-link {
     font-size: 1rem;
     padding: 0.6rem;
+  }
+}
+
+/* Fancy professional stagger for nav items once wordmark is revealed */
+.navbar-container .logo-stack.is-scrolled ~ .navbar-nav .nav-item {
+  opacity: 0;
+  transform: translateX(14px);
+  animation: navStagger 520ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.navbar-container .logo-stack.is-scrolled ~ .navbar-nav .nav-item:nth-child(1) { animation-delay: 60ms; }
+.navbar-container .logo-stack.is-scrolled ~ .navbar-nav .nav-item:nth-child(2) { animation-delay: 120ms; }
+.navbar-container .logo-stack.is-scrolled ~ .navbar-nav .nav-item:nth-child(3) { animation-delay: 180ms; }
+.navbar-container .logo-stack.is-scrolled ~ .navbar-nav .nav-item:nth-child(4) { animation-delay: 240ms; }
+.navbar-container .logo-stack.is-scrolled ~ .navbar-nav .nav-item:nth-child(5) { animation-delay: 300ms; }
+
+@keyframes navStagger {
+  0% { opacity: 0; transform: translateX(14px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Subtle glow pulse as the wordmark appears */
+.logo-stack.is-scrolled .logo-wordmark {
+  filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25));
+  animation: wordmarkPulse 900ms ease 40ms both;
+}
+@keyframes wordmarkPulse {
+  0% { filter: drop-shadow(0 4px 10px rgba(0,0,0,0.25)) brightness(1); }
+  50% { filter: drop-shadow(0 10px 24px rgba(127,92,255,0.35)) brightness(1.07); }
+  100% { filter: drop-shadow(0 6px 14px rgba(0,0,0,0.28)) brightness(1); }
+}
+
+/* Reduced motion accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .navbar,
+  .navbar-scrolled,
+  .logo-link,
+  .logo-img,
+  .logo-stack,
+  .logo-layer,
+  .logo-icon,
+  .logo-wordmark-container,
+  .logo-wordmark-img,
+  .nav-link,
+  .nav-link::after,
+  .dropdown-arrow,
+  .mobile-menu,
+  .mobile-nav-link {
+    transition: none !important;
+    animation: none !important;
   }
 }

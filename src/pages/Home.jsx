@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Button, Container, Typography } from '@mui/material';
+import ArrowForwardIosRounded from '@mui/icons-material/ArrowForwardIosRounded';
+import ChevronRightRounded from '@mui/icons-material/ChevronRightRounded';
 import wordmark from '../assets/company name.png';
 import missionImg from '../assets/mission.webp';
 import targetImg from '../assets/target.webp';
@@ -21,14 +23,46 @@ import businessHolographyImg from '../assets/business-holography.jpeg';
 
 const useScrollAnimation = (threshold = 0.15, rootMargin = '0px 0px -50px 0px') => {
   const [isVisible, setIsVisible] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState('down');
+  const [scrollProgress, setScrollProgress] = useState(0);
   const domRef = React.useRef();
+  const lastScrollY = React.useRef(0);
 
   useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      const element = domRef.current;
+      
+      if (element) {
+        const rect = element.getBoundingClientRect();
+        const elementTop = rect.top + currentScrollY;
+        const elementHeight = rect.height;
+        const windowHeight = window.innerHeight;
+        
+        // Calculate scroll progress (0 to 1)
+        const progress = Math.max(0, Math.min(1, 
+          (currentScrollY + windowHeight - elementTop) / (windowHeight + elementHeight)
+        ));
+        setScrollProgress(progress);
+        
+        // Determine scroll direction
+        if (currentScrollY > lastScrollY.current) {
+          setScrollDirection('down');
+        } else {
+          setScrollDirection('up');
+        }
+        lastScrollY.current = currentScrollY;
+      }
+    };
+
     const observer = new IntersectionObserver(
       entries => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             setIsVisible(true);
+          } else {
+            // Reset animation when element goes out of view
+            setIsVisible(false);
           }
         });
       }, 
@@ -43,14 +77,18 @@ const useScrollAnimation = (threshold = 0.15, rootMargin = '0px 0px -50px 0px') 
       observer.observe(current);
     }
 
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll(); // Initial call
+
     return () => {
       if (current) {
         observer.unobserve(current);
       }
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [threshold, rootMargin]);
 
-  return [domRef, isVisible];
+  return [domRef, isVisible, scrollDirection, scrollProgress];
 };
 
 const services = [
@@ -118,7 +156,28 @@ const GlobalStyles = () => {
 
 // Row component for per-item scroll-triggered animations
 const AnimatedInsightRow = ({ item, index }) => {
-  const [rowRef, isRowVisible] = useScrollAnimation(0.1, '0px 0px -80px 0px');
+  const [rowRef, isRowVisible, scrollDirection, scrollProgress] = useScrollAnimation(0.1, '0px 0px -80px 0px');
+
+  // Calculate dynamic transforms based on scroll direction and progress
+  const getTextTransform = () => {
+    if (!isRowVisible) {
+      return scrollDirection === 'down' 
+        ? 'translateX(-80px) translateY(20px) scale(0.95)' 
+        : 'translateX(80px) translateY(-20px) scale(0.95)';
+    }
+    const progressOffset = scrollProgress * 20;
+    return `translateX(${scrollDirection === 'down' ? progressOffset : -progressOffset}px) translateY(${scrollDirection === 'down' ? -progressOffset : progressOffset}px) scale(${1 + scrollProgress * 0.05})`;
+  };
+
+  const getImageTransform = () => {
+    if (!isRowVisible) {
+      return scrollDirection === 'down' 
+        ? 'translateX(80px) scale(0.95) rotate(2deg)' 
+        : 'translateX(-80px) scale(0.95) rotate(-2deg)';
+    }
+    const progressOffset = scrollProgress * 15;
+    return `translateX(${scrollDirection === 'down' ? -progressOffset : progressOffset}px) scale(${1 + scrollProgress * 0.03}) rotate(${scrollDirection === 'down' ? -progressOffset * 0.1 : progressOffset * 0.1}deg)`;
+  };
 
   return (
     <Box
@@ -135,7 +194,7 @@ const AnimatedInsightRow = ({ item, index }) => {
       <Box
         sx={{
           order: { xs: 2, md: 1 },
-          transform: isRowVisible ? 'translateX(0) translateY(0)' : 'translateX(-80px) translateY(20px)',
+          transform: getTextTransform(),
           opacity: isRowVisible ? 1 : 0,
           transition: `all ${800 + index * 150}ms cubic-bezier(0.16, 1, 0.3, 1)`,
           willChange: 'transform, opacity'
@@ -196,14 +255,14 @@ const AnimatedInsightRow = ({ item, index }) => {
       <Box
         sx={{
           order: { xs: 1, md: 2 },
-          transform: isRowVisible ? 'translateX(0) scale(1) rotate(0deg)' : 'translateX(80px) scale(0.95) rotate(2deg)',
+          transform: getImageTransform(),
           opacity: isRowVisible ? 1 : 0,
           transition: `all ${850 + index * 150}ms cubic-bezier(0.16, 1, 0.3, 1) 50ms`,
           borderRadius: '16px',
           overflow: 'hidden',
           position: 'relative',
           boxShadow: isRowVisible 
-            ? '0 25px 60px rgba(0,0,0,0.6)' 
+            ? `0 ${25 + scrollProgress * 10}px ${60 + scrollProgress * 20}px rgba(0,0,0,${0.6 + scrollProgress * 0.2})` 
             : '0 10px 30px rgba(0,0,0,0.3)',
           willChange: 'transform, opacity, box-shadow'
         }}
@@ -238,7 +297,18 @@ const AnimatedInsightRow = ({ item, index }) => {
 
 // Single point with its own scroll-triggered left entry
 const AnimatedPoint = ({ item, index }) => {
-  const [ref, visible] = useScrollAnimation(0.1, '0px 0px -60px 0px');
+  const [ref, visible, scrollDirection, scrollProgress] = useScrollAnimation(0.1, '0px 0px -60px 0px');
+  
+  const getTransform = () => {
+    if (!visible) {
+      return scrollDirection === 'down' 
+        ? 'translateX(-70px) translateY(15px) scale(0.95)' 
+        : 'translateX(70px) translateY(-15px) scale(0.95)';
+    }
+    const progressOffset = scrollProgress * 15;
+    return `translateX(${scrollDirection === 'down' ? progressOffset : -progressOffset}px) translateY(${scrollDirection === 'down' ? -progressOffset : progressOffset}px) scale(${1 + scrollProgress * 0.03})`;
+  };
+
   return (
     <Box ref={ref} sx={{ mb: index !== 2 ? 4 : 0 }}>
       <Typography
@@ -250,7 +320,7 @@ const AnimatedPoint = ({ item, index }) => {
           display: 'flex',
           alignItems: 'center',
           gap: 1.25,
-          transform: visible ? 'translateX(0) translateY(0)' : 'translateX(-70px) translateY(15px)',
+          transform: getTransform(),
           opacity: visible ? 1 : 0,
           transition: `all ${700 + index * 120}ms cubic-bezier(0.16, 1, 0.3, 1)`,
           willChange: 'transform, opacity'
@@ -314,18 +384,29 @@ const AnimatedPoint = ({ item, index }) => {
 
 // Single image with its own scroll-triggered right entry
 const AnimatedImage = ({ src, alt, height, delay = 0 }) => {
-  const [ref, visible] = useScrollAnimation(0.1, '0px 0px -60px 0px');
+  const [ref, visible, scrollDirection, scrollProgress] = useScrollAnimation(0.1, '0px 0px -60px 0px');
+  
+  const getTransform = () => {
+    if (!visible) {
+      return scrollDirection === 'down' 
+        ? 'translateX(70px) scale(0.95) rotate(3deg)' 
+        : 'translateX(-70px) scale(0.95) rotate(-3deg)';
+    }
+    const progressOffset = scrollProgress * 20;
+    return `translateX(${scrollDirection === 'down' ? -progressOffset : progressOffset}px) scale(${1 + scrollProgress * 0.05}) rotate(${scrollDirection === 'down' ? -progressOffset * 0.1 : progressOffset * 0.1}deg)`;
+  };
+
   return (
     <Box
       ref={ref}
       sx={{
         borderRadius: '14px',
         overflow: 'hidden',
-        transform: visible ? 'translateX(0) scale(1) rotate(0deg)' : 'translateX(70px) scale(0.95) rotate(3deg)',
+        transform: getTransform(),
         opacity: visible ? 1 : 0,
         transition: `all ${800 + delay}ms cubic-bezier(0.16, 1, 0.3, 1)`,
         boxShadow: visible 
-          ? '0 20px 50px rgba(0,0,0,0.6)' 
+          ? `0 ${20 + scrollProgress * 10}px ${50 + scrollProgress * 15}px rgba(0,0,0,${0.6 + scrollProgress * 0.2})` 
           : '0 8px 25px rgba(0,0,0,0.3)',
         willChange: 'transform, opacity, box-shadow'
       }}
@@ -347,11 +428,11 @@ const AnimatedImage = ({ src, alt, height, delay = 0 }) => {
 };
 
 const Home = () => {
-  const [missionRef, isMissionVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
-  const [whatWeDoRef, isWhatWeDoVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
-  const [solutionsRef, isSolutionsVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
-  const [businessRef, isBusinessVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
-  const [insightsRef, isInsightsVisible] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [missionRef, isMissionVisible, missionScrollDirection, missionScrollProgress] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [whatWeDoRef, isWhatWeDoVisible, whatWeDoScrollDirection, whatWeDoScrollProgress] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [solutionsRef, isSolutionsVisible, solutionsScrollDirection, solutionsScrollProgress] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [businessRef, isBusinessVisible, businessScrollDirection, businessScrollProgress] = useScrollAnimation(0.1, '0px 0px -100px 0px');
+  const [insightsRef, isInsightsVisible, insightsScrollDirection, insightsScrollProgress] = useScrollAnimation(0.1, '0px 0px -100px 0px');
 
   return (
     <>
@@ -366,47 +447,17 @@ const Home = () => {
         }}
       >
         {/* Visual wordmark on the left for desktop */}
-        <Box className="flex flex-col" sx={{ order: { xs: 1, md: 1 }, mt: { md: -22, lg: -36 } }}>
+        <Box className="flex flex-col" sx={{ order: { xs: 1, md: 1 }, mt: { md: -26, lg: -38 } }}>
                   <Box
           style={{ isolation: 'isolate' }}
           sx={{
-            animation: 'slideInFromLeft 2.8s cubic-bezier(0.16, 1, 0.3, 1)',
             display: 'flex',
             justifyContent: 'center',
-            alignItems: 'center',
-            '@keyframes slideInFromLeft': {
-              '0%': {
-                opacity: 0,
-                transform: 'translateX(-200px) scale(0.7) rotate(-5deg)'
-              },
-              '20%': {
-                opacity: 0.3,
-                transform: 'translateX(-120px) scale(0.85) rotate(-2deg)'
-              },
-              '40%': {
-                opacity: 0.6,
-                transform: 'translateX(-60px) scale(0.95) rotate(-1deg)'
-              },
-              '60%': {
-                opacity: 0.85,
-                transform: 'translateX(10px) scale(1.03) rotate(0.5deg)'
-              },
-              '80%': {
-                opacity: 0.95,
-                transform: 'translateX(-3px) scale(0.99) rotate(-0.2deg)'
-              },
-              '90%': {
-                opacity: 0.98,
-                transform: 'translateX(1px) scale(1.005) rotate(0.1deg)'
-              },
-              '100%': {
-                opacity: 1,
-                transform: 'translateX(0) scale(1) rotate(0deg)'
-              }
-            }
+            alignItems: 'center'
           }}
         >
-            <img
+            <Box
+              component="img"
               src={wordmark}
               alt="SignaVox"
               className="select-none"
@@ -418,9 +469,18 @@ const Home = () => {
                 objectFit: 'contain'
               }}
               sx={{
-                width: { xs: '700px', sm: '900px', md: '1100px', lg: '1800px' },
-                height: { xs: '500px', sm: '650px', md: '800px', lg: '1000px' },
-                maxWidth: 'none'
+                width: '100%',
+                height: 'auto',
+                maxWidth: { xs: 620, sm: 780, md: 1000, lg: 1500 },
+                animation: 'heroSlideIn 900ms cubic-bezier(0.22, 1, 0.36, 1) both',
+                willChange: 'transform, opacity',
+                '@keyframes heroSlideIn': {
+                  '0%': { opacity: 0, transform: 'translateX(-60px)' },
+                  '100%': { opacity: 1, transform: 'translateX(0)' }
+                },
+                '@media (prefers-reduced-motion: reduce)': {
+                  animation: 'none'
+                }
               }}
               draggable={false}
             />
@@ -436,32 +496,14 @@ const Home = () => {
               letterSpacing: 0.5,
               color: '#ffffff',
               textAlign: 'center',
-              animation: 'slideInFromLeft 2.2s cubic-bezier(0.16, 1, 0.3, 1) both 0.6s',
-              '@keyframes slideInFromLeft': {
-                '0%': {
-                  opacity: 0,
-                  transform: 'translateX(-150px) translateY(20px) scale(0.85)'
-                },
-                '30%': {
-                  opacity: 0.4,
-                  transform: 'translateX(-80px) translateY(10px) scale(0.92)'
-                },
-                '60%': {
-                  opacity: 0.8,
-                  transform: 'translateX(5px) translateY(-2px) scale(1.02)'
-                },
-                '80%': {
-                  opacity: 0.95,
-                  transform: 'translateX(-2px) translateY(1px) scale(0.998)'
-                },
-                '90%': {
-                  opacity: 0.98,
-                  transform: 'translateX(0.5px) translateY(-0.5px) scale(1.001)'
-                },
-                '100%': {
-                  opacity: 1,
-                  transform: 'translateX(0) translateY(0) scale(1)'
-                }
+              animation: 'quoteSlideIn 900ms cubic-bezier(0.22, 1, 0.36, 1) 120ms both',
+              willChange: 'transform, opacity',
+              '@keyframes quoteSlideIn': {
+                '0%': { opacity: 0, transform: 'translateX(-40px)' },
+                '100%': { opacity: 1, transform: 'translateX(0)' }
+              },
+              '@media (prefers-reduced-motion: reduce)': {
+                animation: 'none'
               }
             }}
           >
@@ -470,7 +512,7 @@ const Home = () => {
         </Box>
 
         {/* Right: Paragraph + CTA (on desktop), pushed lower to sit under quote/image */}
-        <Box sx={{ order: { xs: 2, md: 2 }, mt: { md: 16, lg: 32, xl: 36 } }}>
+        <Box sx={{ order: { xs: 2, md: 2 }, mt: { md: 12, lg: 24, xl: 30 } }}>
           <Typography
             component="h2"
             sx={{
@@ -574,7 +616,9 @@ const Home = () => {
         <Box
           ref={missionRef}
           sx={{
-            transform: isMissionVisible ? 'translateX(0) translateY(0) scale(1)' : 'translateX(-80px) translateY(30px) scale(0.95)',
+            transform: isMissionVisible 
+              ? `translateX(${missionScrollDirection === 'down' ? missionScrollProgress * 10 : -missionScrollProgress * 10}px) translateY(${missionScrollDirection === 'down' ? -missionScrollProgress * 5 : missionScrollProgress * 5}px) scale(${1 + missionScrollProgress * 0.02})` 
+              : `translateX(${missionScrollDirection === 'down' ? -80 : 80}px) translateY(${missionScrollDirection === 'down' ? 30 : -30}px) scale(0.95)`,
             opacity: isMissionVisible ? 1 : 0,
             transition: isMissionVisible ? 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
             willChange: 'transform, opacity'
@@ -591,7 +635,9 @@ const Home = () => {
 
         <Box
           sx={{
-            transform: isMissionVisible ? 'translateX(0) translateY(0)' : 'translateX(80px) translateY(30px)',
+            transform: isMissionVisible 
+              ? `translateX(${missionScrollDirection === 'down' ? -missionScrollProgress * 15 : missionScrollProgress * 15}px) translateY(${missionScrollDirection === 'down' ? missionScrollProgress * 8 : -missionScrollProgress * 8}px)` 
+              : `translateX(${missionScrollDirection === 'down' ? 80 : -80}px) translateY(${missionScrollDirection === 'down' ? 30 : -30}px)`,
             opacity: isMissionVisible ? 1 : 0,
             transition: isMissionVisible ? 'all 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.2s' : 'none',
             willChange: 'transform, opacity'
@@ -717,41 +763,59 @@ const Home = () => {
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: '1fr 1fr 1fr' },
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr', lg: '1fr 1fr 1fr 1fr' },
           gap: { xs: '1.25rem', md: '1.75rem', lg: '2rem' }
         }}
       >
-        {services.map((svc, idx) => (
-          <Box
-            key={idx}
-            className="group rounded-2xl overflow-hidden relative"
-            sx={{
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.04) 100%)',
-              boxShadow: '0 8px 30px rgba(0,0,0,0.35)',
-              border: 'none',
-              backdropFilter: 'blur(6px)',
-              transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-              cursor: 'pointer',
-              transform: 'translateY(0) scale(1)',
-              willChange: 'transform, box-shadow',
-              ':hover': {
-                transform: 'translateY(-12px) scale(1.02)',
-                boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
-                '& .service-image': {
-                  transform: 'scale(1.08)',
-                  filter: 'brightness(0.4) saturate(1.2)'
-                },
-                '& .service-overlay': {
-                  opacity: 1,
-                  transform: 'translateY(0)'
-                },
-                '& .service-content': {
-                  opacity: 1,
-                  transform: 'translateY(0)'
+        {services.map((svc, idx) => {
+          const [cardRef, isCardVisible, cardScrollDirection, cardScrollProgress] = useScrollAnimation(0.1, '0px 0px -50px 0px');
+          
+          const getCardTransform = () => {
+            if (!isCardVisible) {
+              return `translateY(${cardScrollDirection === 'down' ? 50 : -50}px) scale(0.95)`;
+            }
+            const progressOffset = cardScrollProgress * 20;
+            return `translateY(${cardScrollDirection === 'down' ? -progressOffset : progressOffset}px) scale(${1 + cardScrollProgress * 0.02})`;
+          };
+
+          return (
+            <Box
+              key={idx}
+              ref={cardRef}
+              className="group rounded-2xl overflow-hidden relative"
+              sx={{
+                background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.04) 100%)',
+                boxShadow: isCardVisible 
+                  ? `0 ${8 + cardScrollProgress * 5}px ${30 + cardScrollProgress * 10}px rgba(0,0,0,${0.35 + cardScrollProgress * 0.15})` 
+                  : '0 8px 30px rgba(0,0,0,0.35)',
+                border: 'none',
+                backdropFilter: 'blur(6px)',
+                transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
+                cursor: 'pointer',
+                transform: getCardTransform(),
+                willChange: 'transform, box-shadow',
+                borderRadius: '18px',
+                overflow: 'hidden',
+                backgroundClip: 'padding-box',
+                opacity: isCardVisible ? 1 : 0,
+                ':hover': {
+                  transform: 'translateY(-12px) scale(1.02)',
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.6)',
+                  '& .service-image': {
+                    transform: 'scale(1.08)',
+                    filter: 'brightness(0.4) saturate(1.2)'
+                  },
+                  '& .service-overlay': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  },
+                  '& .service-content': {
+                    opacity: 1,
+                    transform: 'translateY(0)'
+                  }
                 }
-              }
-            }}
-          >
+              }}
+            >
             {/* Image area */}
             <Box sx={{ position: 'relative', height: { xs: 360, md: 430 }, overflow: 'hidden' }}>
               <Box
@@ -831,20 +895,21 @@ const Home = () => {
             {/* Decorative gradient ring on hover */}
             <Box
               sx={{
-                position: 'absolute', inset: -2,
-                borderRadius: '1.25rem',
+                position: 'absolute', inset: 0,
+                borderRadius: 'inherit',
                 pointerEvents: 'none',
                 boxShadow: `inset 0 0 0 0px ${svc.color}00`,
                 transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                willChange: 'box-shadow',
+                willChange: 'box-shadow, transform',
                 '.group:hover &': { 
                   boxShadow: `inset 0 0 0 3px ${svc.color}cc, 0 0 20px ${svc.color}40`,
-                  transform: 'scale(1.01)'
+                  transform: 'none'
                 }
               }}
             />
           </Box>
-        ))}
+          );
+        })}
       </Box>
     </Container>
 
@@ -892,9 +957,9 @@ const Home = () => {
             px: 0,
             ':hover': { opacity: 0.9, backgroundColor: 'transparent', textDecoration: 'underline' }
           }}
+          endIcon={<Box sx={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 25, height: 25, borderRadius: '1px', background: '#7F5CFF' }}><ChevronRightRounded sx={{ fontSize: 30, color: '#fff' }} /></Box>}
         >
           See the Report
-          <Box component="span" sx={{ display: 'inline-block', ml: 1.25, width: 20, height: 20, borderRadius: '4px', background: '#7F5CFF' }} />
         </Button>
       </Box>
 
@@ -903,10 +968,10 @@ const Home = () => {
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          borderRadius: { xs: '12px', md: '18px' },
-          boxShadow: '0 12px 40px rgba(0,0,0,0.45)',
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.04) 100%)',
-          backdropFilter: 'blur(6px)'
+          borderRadius: 0,
+          boxShadow: 'none',
+          background: 'transparent',
+          backdropFilter: 'none'
         }}
       >
         {/* Gradient watermark arrow overlay like screenshot */}
@@ -921,8 +986,8 @@ const Home = () => {
           sx={{
             display: 'flex',
             alignItems: 'stretch',
-            gap: { xs: 2, md: 3 },
-            p: { xs: 1.5, md: 2 },
+            gap: { xs: '1rem', md: '1.5rem' },
+            p: 0,
             animation: 'marqueeScroll 35s linear infinite',
             '@keyframes marqueeScroll': {
               '0%': { transform: 'translateX(0)' },
@@ -939,10 +1004,7 @@ const Home = () => {
               sx={{ 
                 flex: '0 0 auto', 
                 width: { xs: '75%', sm: '55%', md: '35%' },
-                transition: 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                ':hover': {
-                  transform: 'scale(1.05) translateY(-8px)'
-                }
+                transition: 'none'
               }}
             >
               <Box
@@ -953,10 +1015,9 @@ const Home = () => {
                   width: '100%', 
                   height: { xs: 220, md: 320 }, 
                   objectFit: 'cover',
-                  borderRadius: { xs: '10px', md: '14px' },
-                  boxShadow: '0 12px 40px rgba(0,0,0,0.4)',
-                  transition: 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)',
-                  willChange: 'transform, box-shadow'
+                  borderRadius: 0,
+                  boxShadow: 'none',
+                  transition: 'none'
                 }}
               />
             </Box>
@@ -1189,14 +1250,14 @@ const Home = () => {
       </Box> */}
       {[
         [
-          { title: 'Digital Economy Growth:', text: "India's digital economy is expected to grow fourfold, This expansion will increase its share of GDP from 8% to 20% by 2030" },
-          { title: 'Internet Users:', text: 'The number of internet users in India is projected to exceed 900 million by 2030, driven by increased digital connectivity and government initiatives' },
-          { title: 'Sustainability Investments:', text: 'Sustainability initiatives are projected to catalyse $150-250 billion of additional technology and operations spending by 2030' }
+          { title: 'Digital Economy Growth', text: "India's digital economy is expected to grow fourfold, This expansion will increase its share of GDP from 8% to 20% by 2030" },
+          { title: 'Internet Users', text: 'The number of internet users in India is projected to exceed 900 million by 2030, driven by increased digital connectivity and government initiatives' },
+          { title: 'Sustainability Investments', text: 'Sustainability initiatives are projected to catalyse $150-250 billion of additional technology and operations spending by 2030' }
         ],
         [
-          { title: 'Technology Sector Revenue:', text: "The Indian technology industry's revenue, including hardware, is estimated to reach $254+ billion by FY2024, with exports poised to touch the $200 billion mark" },
-          { title: 'Global Capability Centres:', text: 'The number of GCCs in India is expected to exceed 2,500 by 2030, employing over 4.5 million people' },
-          { title: 'Economic Position:', text: "India is forecasted to become the world's 3rd-largest economy by 2030, surpassing Japan and Germany" }
+          { title: 'Technology Sector Revenue', text: "The Indian technology industry's revenue, including hardware, is estimated to reach $254+ billion by FY2024, with exports poised to touch the $200 billion mark" },
+          { title: 'Global Capability Centres', text: 'The number of GCCs in India is expected to exceed 2,500 by 2030, employing over 4.5 million people' },
+          { title: 'Economic Position', text: "India is forecasted to become the world's 3rd-largest economy by 2030, surpassing Japan and Germany" }
         ]
       ].map((row, rIdx) => (
         <Box key={rIdx} sx={{
@@ -1231,17 +1292,19 @@ const Home = () => {
                   '&:before': {
                     content: '""',
                     position: 'absolute',
-                    top: -60,
-                    right: -60,
-                    width: 160,
-                    height: 160,
-                    background: 'radial-gradient(circle, rgba(127,92,255,0.25) 0%, rgba(127,92,255,0.0) 60%)'
+                    top: -40,
+                    right: -40,
+                    width: 140,
+                    height: 140,
+                    borderRadius: '50%',
+                    background: 'radial-gradient(circle, rgba(127,92,255,0.35) 0%, rgba(127,92,255,0.0) 70%)',
+                    filter: 'blur(0.5px)'
                   },
                   ':hover': {
                     transform: 'translateY(-12px) scale(1.02)',
                     boxShadow: '0 30px 70px rgba(0,0,0,0.7)',
                     '&:before': {
-                      background: 'radial-gradient(circle, rgba(127,92,255,0.4) 0%, rgba(127,92,255,0.1) 60%)'
+                      background: 'radial-gradient(circle, rgba(127,92,255,0.55) 0%, rgba(127,92,255,0.0) 75%)'
                     }
                   },
                   willChange: 'transform, box-shadow'

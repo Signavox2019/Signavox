@@ -12,7 +12,7 @@
 /* Fixed Background Watermark element styled from JSX inline bg-image */
 .bg-watermark {
   position: fixed;
-  top: 50%;
+  top: 55%;
   right: -2%;
   width: 88vmin;
   height: 88vmin;
@@ -24,6 +24,17 @@
   pointer-events: none;
   z-index: 0;
   filter: saturate(120%);
+  transition: opacity 0.6s ease-in-out, filter 0.6s ease-in-out;
+  background-image: var(--logo-bg-image);
+  /* Gradient mask to reduce opacity at bottom */
+  mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.3) 100%);
+  -webkit-mask: linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0.3) 100%);
+}
+
+/* Bright state when footer is in view */
+.bg-watermark.bright {
+  opacity: 1;
+  filter: brightness(1.0);
 }
 
 /* Layered overlays to shape light/dark like the reference */
@@ -50,7 +61,7 @@
   position: fixed;
   inset: 0;
   z-index: -1;
-  background: linear-gradient(180deg, rgba(10, 8, 30, 0.55) 0%, rgba(10, 8, 30, 0.35) 18%, rgba(10, 8, 30, 0.0) 42%);
+  background: linear-gradient(180deg, rgba(10, 8, 30, 0.25) 0%, rgba(10, 8, 30, 0.15) 18%, rgba(10, 8, 30, 0.0) 42%);
   pointer-events: none;
 }
 
